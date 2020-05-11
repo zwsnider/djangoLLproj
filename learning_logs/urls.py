@@ -18,4 +18,5 @@ urlpatterns = [
     # the function name to call in views.py. the third argument provides
     # the name 'index' for this  URL pattern to refer to it later
     path('', views.index, name='index'),
+    path('topics',views.topics, name='topics'),
 ]
