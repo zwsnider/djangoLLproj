@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .forms import TopicForm, EntryForm
-
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 # When a URL request matches the pattern we just defined,
@@ -12,6 +12,7 @@ def index(request):
 
 from .models import Topic, Entry
 
+@login_required
 def topics(request):
     topics = Topic.objects.order_by('date_added')
     #A context is a dictionary in which the keys are names we'll use
@@ -26,7 +27,7 @@ def topics(request):
     return render(request, 'learning_logs/topics.html', context)
 
 
-
+@login_required
 def topic(request, topic_id):
     #Like ini  MyShell.py
     topic = Topic.objects.get(id=topic_id)
@@ -37,7 +38,7 @@ def topic(request, topic_id):
     return render(request, 'learning_logs/topic.html',context)
 
 
-
+@login_required
 def new_topic(request):
     if request.method != 'POST':
         # No data submitted; create a blank form (create an instance of TopicForm)
@@ -63,7 +64,7 @@ def new_topic(request):
     return render(request, 'learning_logs/new_topic.html',context)
 
 
-
+@login_required
 def new_entry(request, topic_id):
     topic = Topic.objects.get(id=topic_id)
     if request.method != 'POST':
@@ -85,7 +86,7 @@ def new_entry(request, topic_id):
     return render(request, 'learning_logs/new_entry.html', context)
 
 
-
+@login_required
 def edit_entry(request, entry_id):
     """Edit an existing entry"""
     entry = Entry.objects.get(id=entry_id)
