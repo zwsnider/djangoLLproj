@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import TopicForm
+from .forms import TopicForm, EntryForm
 
 # Create your views here.
 
@@ -57,4 +57,24 @@ def new_topic(request):
     # Display a blank form using the new_topic.html template
     context = {'form': form}
     return render(request, 'learning_logs/new_topic.html',context)
+
+def new_entry(request, topic_id):
+    topic = Topic.objects.get(id=topic_id)
+    if request.method != 'POST':
+        form = EntryForm()
+    else:
+        form = EntryForm(data=request.POST)
         
+        if form.is_valid():
+            # When we call save(), we include the argument commit=False to tell Django to create
+            # a new entry object and assign it to new_entry without saving it to the database yet.
+            new_entry = form.save(commit=False)
+            #Need to assign the topic of the new entry based on the topic we pulled from topic_id
+            new_entry.topic = topic
+            new_entry.save()
+            form.save()
+            return redirect('learning_logs:topic',topic_id=topic_id)
+        
+    context = {'form': form, 'topic': topic}
+    return render(request, 'learning_logs/new_entry.html', context)
+            
