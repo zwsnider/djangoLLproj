@@ -18,6 +18,8 @@ def topics(request):
     # we need to send to the template. In this case there's only one key-value pair,
     # which contains the set of topics we'll display on the page.
     context = {'topics':topics}
+    #This is how you interact with the database
+    
     #When building a page that uses data, we pass the context variable to render()
     # as well as the request object and the path to the template
     return render(request, 'learning_logs/topics.html', context)
