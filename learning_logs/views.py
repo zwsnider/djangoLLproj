@@ -10,7 +10,7 @@ def index(request):
     """The home page for Learning Log."""
     return render(request, 'learning_logs/index.html')
 
-from .models import Topic
+from .models import Topic, Entry
 
 def topics(request):
     topics = Topic.objects.order_by('date_added')
@@ -25,6 +25,8 @@ def topics(request):
     # as well as the request object and the path to the template
     return render(request, 'learning_logs/topics.html', context)
 
+
+
 def topic(request, topic_id):
     #Like ini  MyShell.py
     topic = Topic.objects.get(id=topic_id)
@@ -33,6 +35,8 @@ def topic(request, topic_id):
     context = {'topic':topic, 'entries':entries}
     
     return render(request, 'learning_logs/topic.html',context)
+
+
 
 def new_topic(request):
     if request.method != 'POST':
@@ -58,6 +62,8 @@ def new_topic(request):
     context = {'form': form}
     return render(request, 'learning_logs/new_topic.html',context)
 
+
+
 def new_entry(request, topic_id):
     topic = Topic.objects.get(id=topic_id)
     if request.method != 'POST':
@@ -77,4 +83,24 @@ def new_entry(request, topic_id):
         
     context = {'form': form, 'topic': topic}
     return render(request, 'learning_logs/new_entry.html', context)
-            
+
+
+
+def edit_entry(request, entry_id):
+    """Edit an existing entry"""
+    entry = Entry.objects.get(id=entry_id)
+    topic = entry.topic
+    
+    if request.method != 'POST':
+        # This argument tells Django to create the form prefilled
+        # with information from the existing entry object.
+        form = EntryForm(instance=entry)
+    else:
+        # POST data submitted; process data.
+        form = EntryForm(instance=entry, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return  redirect('learning_logs:topic', topic_id=topic.id)
+    
+    context = {'entry': entry, 'topic': topic, 'form': form}
+    return render(request, 'learning_logs/edit_entry.html', context)
