@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from .forms import TopicForm, EntryForm
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
+
 # Create your views here.
 
 # When a URL request matches the pattern we just defined,
@@ -14,7 +16,7 @@ from .models import Topic, Entry
 
 @login_required
 def topics(request):
-    topics = Topic.objects.order_by('date_added')
+    topics = Topic.objects.filter(owner=request.user).order_by('date_added')
     #A context is a dictionary in which the keys are names we'll use
     # in the template to access the data, and the values are the data
     # we need to send to the template. In this case there's only one key-value pair,
@@ -29,8 +31,13 @@ def topics(request):
 
 @login_required
 def topic(request, topic_id):
-    #Like ini  MyShell.py
+    #Like in MyShell.py to get IDnum of the topic/entry/user
     topic = Topic.objects.get(id=topic_id)
+    
+    #Make surre the topic belongs to the current user.
+    if topic.owner != request.user:
+        raise Http404
+    
     #Foreign key can be accessed using '_set'
     entries = topic.entry_set.order_by('date_added') # -date_added is in descending order
     context = {'topic':topic, 'entries':entries}
@@ -55,7 +62,9 @@ def new_topic(request):
         # matches the field types expected.
         if form.is_valid():
             #write the data from the form to the database
-            form.save()
+            new_topic = form.save(commit=False)
+            new_topic.owner = request.user
+            new_topic.save()
             #redirect the user's browser to the topics page
             return redirect('learning_logs:topics')
         
@@ -67,6 +76,10 @@ def new_topic(request):
 @login_required
 def new_entry(request, topic_id):
     topic = Topic.objects.get(id=topic_id)
+    
+    if topic.owner != request.user:
+        raise Http404
+    
     if request.method != 'POST':
         form = EntryForm()
     else:
@@ -91,6 +104,9 @@ def edit_entry(request, entry_id):
     """Edit an existing entry"""
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic
+    
+    if topic.owner != request.user:
+        raise Http404
     
     if request.method != 'POST':
         # This argument tells Django to create the form prefilled
