@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from .forms import TopicForm
 
 # Create your views here.
 
@@ -32,3 +33,28 @@ def topic(request, topic_id):
     context = {'topic':topic, 'entries':entries}
     
     return render(request, 'learning_logs/topic.html',context)
+
+def new_topic(request):
+    if request.method != 'POST':
+        # No data submitted; create a blank form (create an instance of TopicForm)
+        # Because we included no arguments when instantiating TopicForm, Django
+        # creates a blank form that the user can fill out.
+        form = TopicForm()
+    else:
+        # POST data submitted; process data.
+        # We make an instance of TopicForm and pass it the data entered by the user,
+        # stored in request.POST.
+        form = TopicForm(data=request.POST)
+        #The is_valid() method checks that all required fields have been filled
+        # in (all fields in a form are required by default) and that the data entered
+        # matches the field types expected.
+        if form.is_valid():
+            #write the data from the form to the database
+            form.save()
+            #redirect the user's browser to the topics page
+            return redirect('learning_logs:topics')
+        
+    # Display a blank form using the new_topic.html template
+    context = {'form': form}
+    return render(request, 'learning_logs/new_topic.html',context)
+        
